@@ -1,0 +1,13 @@
+repositories:
+  free_fleet:
+    type: git
+    url: https://github.com/kostica-ait/free_fleet.git
+    version: feat/rmf-nav2-route-sync
+  nav2_rmf_nav_yaml_graph_file_loader:
+    type: git
+    url: https://github.com/kostica-ait/nav2_rmf_nav_yaml_graph_file_loader.git
+    version: master
+  rmf_nav2_route_demo:
+    type: git
+    url: https://github.com/kostica-ait/rmf_nav2_route_demo.git
+    version: master
