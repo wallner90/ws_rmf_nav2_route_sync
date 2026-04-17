@@ -19,6 +19,8 @@
 		// "--device=/dev/dri"
 	],
 	"containerEnv": {
+		"RMW_IMPLEMENTATION": "rmw_cyclonedds_cpp",
+		"ROS_DOMAIN_ID": "55",
 		"DISPLAY": "${localEnv:DISPLAY}", // Needed for GUI try ":0" for windows
 		"WAYLAND_DISPLAY": "${localEnv:WAYLAND_DISPLAY}",
 		"XDG_RUNTIME_DIR": "${localEnv:XDG_RUNTIME_DIR}",

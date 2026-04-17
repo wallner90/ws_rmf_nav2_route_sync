@@ -1,27 +1,34 @@
 FROM osrf/ros:jazzy-desktop-full
 
 ENV DEBIAN_FRONTEND=noninteractive
+ARG ZENOH_VERSION=1.5.0
 
 RUN apt-get update \
     && apt-get -y install --no-install-recommends \
     ros-${ROS_DISTRO}-nav2-bringup \
     ros-${ROS_DISTRO}-ros-gz \
     ros-${ROS_DISTRO}-rmw-cyclonedds-cpp \
+    ca-certificates \
     python3-pip \
+    unzip \
+    wget \
     # Clean up
     && apt-get autoremove -y \
     && apt-get clean -y \
     && rm -rf /var/lib/apt/lists/*
 
 
-RUN curl -L https://download.eclipse.org/zenoh/debian-repo/zenoh-public-key | sudo gpg --dearmor --yes --output /etc/apt/keyrings/zenoh-public-key.gpg \
-    && echo "deb [signed-by=/etc/apt/keyrings/zenoh-public-key.gpg] https://download.eclipse.org/zenoh/debian-repo/ /" | sudo tee -a /etc/apt/sources.list > /dev/null \
-    && apt-get update \
-    && apt-get -y install --no-install-recommends \
-    zenoh-bridge-ros2dds \
-    && apt-get autoremove -y \
-    && apt-get clean -y \
-    && rm -rf /var/lib/apt/lists/*
+RUN wget -O /tmp/zenoh-plugin-ros2dds.zip \
+      https://github.com/eclipse-zenoh/zenoh-plugin-ros2dds/releases/download/${ZENOH_VERSION}/zenoh-plugin-ros2dds-${ZENOH_VERSION}-x86_64-unknown-linux-gnu-standalone.zip \
+    && unzip -j /tmp/zenoh-plugin-ros2dds.zip 'zenoh-bridge-ros2dds' -d /usr/local/bin \
+    && chmod +x /usr/local/bin/zenoh-bridge-ros2dds \
+    && rm -f /tmp/zenoh-plugin-ros2dds.zip
+
+RUN wget -O /tmp/zenoh.zip \
+      https://github.com/eclipse-zenoh/zenoh/releases/download/${ZENOH_VERSION}/zenoh-${ZENOH_VERSION}-x86_64-unknown-linux-gnu-standalone.zip \
+    && unzip -j /tmp/zenoh.zip 'zenohd' -d /usr/local/bin \
+    && chmod +x /usr/local/bin/zenohd \
+    && rm -f /tmp/zenoh.zip
 
 RUN python3 -m pip install --break-system-packages --no-cache-dir \
     nudged \
