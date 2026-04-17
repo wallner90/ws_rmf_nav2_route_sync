@@ -25,6 +25,10 @@
 		"PULSE_SERVER": "${localEnv:PULSE_SERVER}",
 		// "LIBGL_ALWAYS_SOFTWARE": "1" // Needed for software rendering of opengl
 	},
+	"remoteEnv": {
+		"SSH_AUTH_SOCK": "/tmp/agent-workstation.sock"
+	},
+	"postCreateCommand": "./setup.sh && ./build.sh",
 	// Set *default* container specific settings.json values on container create.
 	"customizations": {
 		"vscode": {

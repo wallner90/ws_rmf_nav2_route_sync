@@ -16,56 +16,41 @@ controller so the robot tracks the route graph closely.
 
 ## Setup
 
-This workspace is intended to be used in the provided devcontainer. New terminals
+This workspace runs inside the provided devcontainer. New devcontainer terminals
 automatically source ROS 2 and the workspace overlay.
 
-Before running the demo, install `zenohd` on the host system by following the
+**Host prerequisite:** install `zenohd` by following the
 [official guide](https://zenoh.io/docs/getting-started/installation/#ubuntu-or-any-debian).
-The host terminal used below must be able to launch `zenohd` directly.
 
-Open the devcontainer and run:
-
-```bash
-./setup.sh
-```
-
-This imports the repositories listed in `src/ros2.repos` and installs the required dependencies.
-
-Then build the workspace:
-
-```bash
-./build.sh
-```
-
-Re-run `./build.sh` after any source code changes.
+When the devcontainer is created, `./setup.sh` and `./build.sh` run automatically.
+Re-run `./build.sh` inside the devcontainer after any source code changes.
 
 ## Running the Demo
 
-After building the workspace, use the following terminals.
+Start `zenohd` on the **host machine** first, then open the devcontainer and launch
+the remaining three processes each in their own devcontainer terminal.
 
-### Host terminal
-
-Start the zenoh router on the host machine:
+### Host machine — zenoh router
 
 ```bash
 zenohd
 ```
 
-### Terminal 1: Simulation
+### Devcontainer — Terminal 1: Simulation
 
 ```bash
 export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
 ros2 launch rmf_nav2_route_demo nav2.launch.py
 ```
 
-### Terminal 2: zenoh bridge
+### Devcontainer — Terminal 2: zenoh bridge
 
 ```bash
 export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
 zenoh-bridge-ros2dds -c $(ros2 pkg prefix free_fleet_examples)/share/free_fleet_examples/config/zenoh/nav2_tb3_zenoh_bridge_ros2dds_client_config.json5
 ```
 
-### Terminal 3: RMF + fleet adapter
+### Devcontainer — Terminal 3: RMF + fleet adapter
 
 ```bash
 export ROS_DOMAIN_ID=55
@@ -74,17 +59,14 @@ ros2 launch rmf_nav2_route_demo rmf.launch.xml
 
 ## Demo Actions
 
-This demo illustrates that lane closures are synchronized between RMF and the Nav2
-route graph. Follow the steps below in order to see the difference.
-
-The same closure state is also propagated to the Nav2 route server, so graph-based
-navigation goals sent directly through Nav2 will avoid the closed lanes until they
-are reopened.
+Run all commands below in a **devcontainer terminal** with `ROS_DOMAIN_ID=55`. They
+demonstrate that lane closures issued through RMF are propagated to Nav2, so both
+systems always agree on which routes are available.
 
 ### 1. Dispatch with lanes open
 
-With all lanes open (the default), dispatch a task. The robot will traverse the
-corridor through lanes `20` and `21` because it is part of the shortest path.
+With all lanes open (the default), dispatch a task. The robot traverses the corridor
+through lanes `20` and `21` because it is the shortest path.
 
 ```bash
 export ROS_DOMAIN_ID=55
@@ -92,6 +74,9 @@ ros2 run rmf_demos_tasks dispatch_go_to_place -p north_east
 ```
 
 ### 2. Close lanes
+
+Close lanes `20` and `21`. Both RMF and the Nav2 route server will treat that
+corridor as unavailable.
 
 ```bash
 export ROS_DOMAIN_ID=55
@@ -112,14 +97,14 @@ ros2 run rmf_demos_tasks dispatch_go_to_place -p tb3_charger
 
 ### 4. Reopen lanes
 
+Reopen the corridor. Subsequent RMF dispatches and Nav2 graph-based goals can use
+that route again.
+
 ```bash
 export ROS_DOMAIN_ID=55
 ros2 topic pub --once /lane_closure_requests rmf_fleet_msgs/msg/LaneRequest \
 	"{fleet_name: 'turtlebot3', close_lanes: [], open_lanes: [20, 21]}"
 ```
-
-After reopening the lanes, subsequent RMF dispatches and Nav2 graph-based goals can
-use that route again.
 
 ## License
 
