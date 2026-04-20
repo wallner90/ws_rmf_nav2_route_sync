@@ -19,20 +19,7 @@ controller so the robot tracks the route graph closely.
 Use this workspace from the provided devcontainer. New terminals automatically
 source ROS 2 and the workspace overlay.
 
-Open the devcontainer and run:
-
-```bash
-./setup.sh
-```
-
-This imports repositories listed in `src/ros2.repos` and installs required
-dependencies.
-
-Then build the workspace:
-
-```bash
-./build.sh
-```
+When the devcontainer is created, `./setup.sh` and `./build.sh` run automatically.
 
 Re-run `./build.sh` after any source code changes.
 
@@ -99,14 +86,17 @@ navigation goals sent through Nav2 also avoid closed lanes until they are reopen
 
 ### 1. Dispatch with lanes open
 
-With all lanes open (the default), dispatch a task. The robot will traverse the
-corridor through lanes `20` and `21` because it is part of the shortest path.
+With all lanes open (the default), dispatch a task. The robot traverses the corridor
+through lanes `20` and `21` because it is the shortest path.
 
 ```bash
 ros2 run rmf_demos_tasks dispatch_go_to_place -p north_east
 ```
 
 ### 2. Close lanes
+
+Close lanes `20` and `21`. Both RMF and the Nav2 route server will treat that
+corridor as unavailable.
 
 ```bash
 ros2 topic pub --once /lane_closure_requests rmf_fleet_msgs/msg/LaneRequest \
@@ -125,13 +115,13 @@ ros2 run rmf_demos_tasks dispatch_go_to_place -p tb3_charger
 
 ### 4. Reopen lanes
 
+Reopen the corridor. Subsequent RMF dispatches and Nav2 graph-based goals can use
+that route again.
+
 ```bash
 ros2 topic pub --once /lane_closure_requests rmf_fleet_msgs/msg/LaneRequest \
 	"{fleet_name: 'turtlebot3', close_lanes: [], open_lanes: [20, 21]}"
 ```
-
-After reopening the lanes, subsequent RMF dispatches and Nav2 graph-based goals can
-use that route again.
 
 ## License
 
